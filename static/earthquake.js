@@ -6,7 +6,7 @@ function circleSize(magnitude) {
 // Function to color the circle by depth
 function circleColor(depth) {
     if (depth >= 90) {
-        color = "#E23B3E";
+        color = "#F94144";
     }
     else if (depth < 10 && depth >= 0) {
         color = "#577590";
@@ -15,7 +15,7 @@ function circleColor(depth) {
         color = "#4D908E";
     }
     else if (depth < 30 && depth >= 20) {
-        color = "#6FA77E";
+        color = "#43AA8B";
     }
     else if (depth < 40 && depth >= 30) {
         color = "#90BE6D";
@@ -33,7 +33,7 @@ function circleColor(depth) {
         color = "#F3722C";
     }
     else if (depth < 90 && depth >= 80) {
-        color = "#EB5735";
+        color = "#F65A38";
     };
     return color;
 };
@@ -47,41 +47,13 @@ d3.json(queryUrl).then(data => {
   // Once we get a response, send the data.features object to the createFeatures function.
   createFeatures(data.features);
 
-  // Set up the legend.
-  var legend = L.control({ position: "bottomright" });
-  legend.onAdd = function() {
-    var div = L.DomUtil.create("div", "info legend");
-    var limits = geojson.options.limits;
-    var colors = geojson.options.colors;
-    var labels = [];
-
-    // Add the minimum and maximum.
-    var legendInfo = "<h1>Depth of Earthquake</h1>" +
-      "<div class=\"labels\">" +
-        "<div class=\"min\">" + limits[0] + "</div>" +
-        "<div class=\"max\">" + limits[limits.length - 1] + "</div>" +
-      "</div>";
-
-    div.innerHTML = legendInfo;
-
-    limits.forEach(function(limit, index) {
-      labels.push("<li style=\"background-color: " + colors[index] + "\"></li>");
-    });
-
-    div.innerHTML += "<ul>" + labels.join("") + "</ul>";
-    return div;
-  };
-
-  // Adding the legend to the map
-  legend.addTo(myMap);
-});
-
 function createFeatures(earthquakeData) {
 
     // Define a function that we want to run once for each feature in the features array.
     // Give each feature a popup that describes the place and time of the earthquake.
     function onEachFeature(feature, layer) {
-      layer.bindPopup(`<h3>${feature.properties.place}</h3><hr><p>${new Date(feature.properties.time)}</p>`);
+      layer.bindPopup("Place: " + feature.properties.place + "<br>Time: " + feature.properties.time + 
+            "<br> Magnitude: " + feature.properties.mag + "<br> Deth (per km): " + feature.geometry.coordinates[2]);
     }
   
     // Create a GeoJSON layer that contains the features array on the earthquakeData object.
@@ -140,11 +112,33 @@ function createFeatures(earthquakeData) {
     // Create a layer control.
     // Pass it our baseMaps and overlayMaps.
     // Add the layer control to the map.
-    L.control.layers(baseMaps, overlayMaps, {
-      collapsed: false
-    }).addTo(myMap);
+    L.control.layers(baseMaps, overlayMaps).addTo(myMap);
+
+    // Set up the legend.
+    var legend = L.control({ position: "bottomright" });
+    legend.onAdd = function() {
+        var div = L.DomUtil.create("div", "info legend");
+            limits = [0,10,20,30,40,50,60,70,80,90];
+        var colors = ["#577590","#4D908E","#43AA8B","#90BE6D","#C5C35E","#F9C74F","#F8961E","#F3722C","#F65A38","#F94144"]
+        var labels = [];
+
+        // Add the minimum and maximum.
+        var legendInfo = "<h1>Depth of Earthquake</br> (per km) </h1>" +
+            "<div class=\"labels\">" +
+            "<div class=\"min\">" + limits[0] + "</div>" +
+            "<div class=\"max\">" + limits[limits.length - 1] + "</div>" +
+            "</div>";
+
+        div.innerHTML = legendInfo;
+
+        limits.forEach(function(limit, index) {
+        labels.push("<li style=\"background-color: " + colors[index] + "\"></li>");
+        });
+
+        div.innerHTML += "<ul>" + labels.join("") + "</ul>";
+        return div;
+    };
+
+    // Adding the legend to the map
     legend.addTo(myMap);
-  
-  }
-  
-  
+  }});
